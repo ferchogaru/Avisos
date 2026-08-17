@@ -426,7 +426,7 @@ export default function App() {
               />
 
               <div className="flex flex-wrap gap-2">
-                {['Todos', 'Activo', 'En progreso', 'Falta Inspección', 'Concluido'].map((estado) => (
+                {['Todos', 'Activo', 'En proceso', 'Falta Inspección', 'Concluido'].map((estado) => (
                   <button
                     key={estado}
                     onClick={() => setFiltroEstado(estado)}
@@ -466,7 +466,7 @@ export default function App() {
                         className={`text-xs px-2.5 py-1 rounded-full font-semibold ${
                           aviso.estado === 'Activo'
                             ? 'bg-emerald-100 text-emerald-800'
-                            : aviso.estado === 'En progreso'
+                            : aviso.estado === 'En proceso'
                             ? 'bg-amber-100 text-amber-800'
                             : aviso.estado === 'Falta Inspección'
                             ? 'bg-rose-100 text-rose-800'
@@ -502,7 +502,7 @@ export default function App() {
 
                     <div className="pt-3 border-t border-slate-200 flex flex-wrap items-center gap-2">
                       <span className="text-xs text-slate-400 font-semibold">Cambiar estado:</span>
-                      {['Activo', 'En progreso', 'Falta Inspección', 'Concluido'].map((est) => (
+                      {['Activo', 'En proceso', 'Falta Inspección', 'Concluido'].map((est) => (
                         <button
                           key={est}
                           onClick={() => cambiarEstado(aviso.id, est)}
