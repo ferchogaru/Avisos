@@ -206,7 +206,7 @@ export default function App() {
               </svg>
             </div>
             <h1 className="text-2xl font-bold text-white">Recepción de Avisos</h1>
-            <p className="text-slate-400 text-sm mt-1">Delegación Contravencional</p>
+            <p className="text-slate-400 text-sm mt-1">Contravencional</p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-5">
