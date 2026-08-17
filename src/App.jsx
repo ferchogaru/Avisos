@@ -19,7 +19,7 @@ export default function App() {
   const [busqueda, setBusqueda] = useState('')
   const [filtroEstado, setFiltroEstado] = useState('Todos')
 
-  // Formulario
+  // Formulario de Registro
   const [formData, setFormData] = useState({
     nombre: '',
     dui: '',
@@ -27,8 +27,23 @@ export default function App() {
     direccion: '',
     articulo: '',
     descripcion: '',
+    fecha: '',
+    ubicacion: '',
   })
   const [archivo, setArchivo] = useState(null)
+
+  // Estado para Edición de Avisos
+  const [editingAviso, setEditingAviso] = useState(null)
+  const [editFormData, setEditFormData] = useState({
+    nombre: '',
+    dui: '',
+    telefono: '',
+    direccion: '',
+    articulo: '',
+    descripcion: '',
+    fecha: '',
+    ubicacion: '',
+  })
 
   // Manejo de Sesión de Supabase
   useEffect(() => {
@@ -101,6 +116,11 @@ export default function App() {
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
 
+  const handleEditInputChange = (e) => {
+    const { name, value } = e.target
+    setEditFormData((prev) => ({ ...prev, [name]: value }))
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!formData.nombre || !formData.dui || !formData.descripcion) {
@@ -138,6 +158,8 @@ export default function App() {
           direccion: formData.direccion,
           articulo: formData.articulo,
           descripcion: formData.descripcion,
+          fecha: formData.fecha || null,
+          ubicacion: formData.ubicacion,
           archivo_url: archivoUrl,
           estado: 'Activo',
         },
@@ -152,6 +174,8 @@ export default function App() {
         direccion: '',
         articulo: '',
         descripcion: '',
+        fecha: '',
+        ubicacion: '',
       })
       setArchivo(null)
       fetchAvisos()
@@ -161,6 +185,52 @@ export default function App() {
       alert(`Ocurrió un error al guardar: ${error.message || 'Verifica la consola'}`)
     } finally {
       setUploading(false)
+    }
+  }
+
+  // Abrir Modal de Edición
+  const handleStartEdit = (aviso) => {
+    setEditingAviso(aviso)
+    setEditFormData({
+      nombre: aviso.nombre || '',
+      dui: aviso.dui || '',
+      telefono: aviso.telefono || '',
+      direccion: aviso.direccion || '',
+      articulo: aviso.articulo || '',
+      descripcion: aviso.descripcion || '',
+      fecha: aviso.fecha || '',
+      ubicacion: aviso.ubicacion || '',
+    })
+  }
+
+  // Guardar Edición
+  const handleSaveEdit = async (e) => {
+    e.preventDefault()
+    if (!editingAviso) return
+
+    try {
+      const { error } = await supabase
+        .from('avisos')
+        .update({
+          nombre: editFormData.nombre,
+          dui: editFormData.dui,
+          telefono: editFormData.telefono,
+          direccion: editFormData.direccion,
+          articulo: editFormData.articulo,
+          descripcion: editFormData.descripcion,
+          fecha: editFormData.fecha || null,
+          ubicacion: editFormData.ubicacion,
+        })
+        .eq('id', editingAviso.id)
+
+      if (error) throw error
+
+      alert('Aviso actualizado correctamente')
+      setEditingAviso(null)
+      fetchAvisos()
+    } catch (error) {
+      console.error('Error actualizando aviso:', error)
+      alert(`Error al actualizar: ${error.message}`)
     }
   }
 
@@ -253,12 +323,12 @@ export default function App() {
     )
   }
 
-  // 2. Tu Interfaz Original Completa (Solo visible al Iniciar Sesión)
+  // 2. Interfaz Principal
   return (
     <div className="min-h-screen bg-slate-100 p-4 md:p-8 font-sans text-slate-800">
       <div className="max-w-6xl mx-auto space-y-6">
-        
-        {/* Encabezado con Botón de Cerrar Sesión */}
+
+        {/* Encabezado */}
         <header className="bg-slate-900 text-white p-6 rounded-xl shadow-md flex justify-between items-center">
           <div>
             <div className="flex items-center gap-3">
@@ -286,7 +356,7 @@ export default function App() {
 
         {/* Contenido Principal */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          
+
           {/* Formulario */}
           <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
             <h2 className="text-lg font-bold border-b pb-3 mb-4 text-slate-800">
@@ -351,15 +421,43 @@ export default function App() {
                 />
               </div>
 
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-600 uppercase mb-1">
+                    Fecha del hecho
+                  </label>
+                  <input
+                    type="date"
+                    name="fecha"
+                    value={formData.fecha}
+                    onChange={handleInputChange}
+                    className="w-full p-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-600 uppercase mb-1">
+                    Artículo / Base Legal
+                  </label>
+                  <input
+                    type="text"
+                    name="articulo"
+                    placeholder="Ej: Art. 45"
+                    value={formData.articulo}
+                    onChange={handleInputChange}
+                    className="w-full p-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+
               <div>
                 <label className="block text-xs font-bold text-slate-600 uppercase mb-1">
-                  Artículo / Base Legal
+                  Ubicación (Link Google Maps)
                 </label>
                 <input
-                  type="text"
-                  name="articulo"
-                  placeholder="Ej: Art. 45 u Ordenanza Municipal"
-                  value={formData.articulo}
+                  type="url"
+                  name="ubicacion"
+                  placeholder="https://maps.google.com/..."
+                  value={formData.ubicacion}
                   onChange={handleInputChange}
                   className="w-full p-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
@@ -462,30 +560,52 @@ export default function App() {
                         </p>
                       </div>
 
-                      <span
-                        className={`text-xs px-2.5 py-1 rounded-full font-semibold ${
-                          aviso.estado === 'Activo'
-                            ? 'bg-emerald-100 text-emerald-800'
-                            : aviso.estado === 'En proceso'
-                            ? 'bg-amber-100 text-amber-800'
-                            : aviso.estado === 'Falta Inspección'
-                            ? 'bg-rose-100 text-rose-800'
-                            : 'bg-slate-200 text-slate-700'
-                        }`}
-                      >
-                        {aviso.estado === 'Activo' && '✔ '}
-                        {aviso.estado || 'Sin Estado'}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleStartEdit(aviso)}
+                          className="text-xs px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded transition cursor-pointer"
+                        >
+                          ✏️ Editar
+                        </button>
+                        <span
+                          className={`text-xs px-2.5 py-1 rounded-full font-semibold ${
+                            aviso.estado === 'Activo'
+                              ? 'bg-emerald-100 text-emerald-800'
+                              : aviso.estado === 'En proceso'
+                              ? 'bg-amber-100 text-amber-800'
+                              : aviso.estado === 'Falta Inspección'
+                              ? 'bg-rose-100 text-rose-800'
+                              : 'bg-slate-200 text-slate-700'
+                          }`}
+                        >
+                          {aviso.estado === 'Activo' && '✔ '}
+                          {aviso.estado || 'Sin Estado'}
+                        </span>
+                      </div>
                     </div>
 
                     <p className="text-sm text-slate-700 bg-white p-3 rounded-lg border border-slate-100 my-2">
                       {aviso.descripcion}
                     </p>
 
-                    {(aviso.direccion || aviso.articulo) && (
+                    {(aviso.direccion || aviso.articulo || aviso.fecha || aviso.ubicacion) && (
                       <div className="text-xs text-slate-500 space-y-1 mb-3">
+                        {aviso.fecha && <p><span className="font-semibold text-slate-700">Fecha:</span> {aviso.fecha}</p>}
                         {aviso.direccion && <p><span className="font-semibold text-slate-700">Dirección:</span> {aviso.direccion}</p>}
                         {aviso.articulo && <p><span className="font-semibold text-slate-700">Base / Art.:</span> {aviso.articulo}</p>}
+                        {aviso.ubicacion && (
+                          <p>
+                            <span className="font-semibold text-slate-700">Ubicación: </span>
+                            <a
+                              href={aviso.ubicacion}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-600 hover:underline font-medium inline-flex items-center gap-1"
+                            >
+                              📍 Abrir en Google Maps
+                            </a>
+                          </p>
+                        )}
                       </div>
                     )}
 
@@ -525,6 +645,131 @@ export default function App() {
 
         </div>
       </div>
+
+      {/* MODAL PARA EDITAR AVISO */}
+      {editingAviso && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white border border-slate-200 rounded-xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6">
+            <div className="flex justify-between items-center border-b pb-3 mb-4">
+              <h3 className="text-lg font-bold text-slate-800">Editar Aviso Ingresado</h3>
+              <button
+                onClick={() => setEditingAviso(null)}
+                className="text-slate-400 hover:text-slate-600 font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEdit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-600 uppercase mb-1">Nombre Completo</label>
+                <input
+                  type="text"
+                  name="nombre"
+                  value={editFormData.nombre}
+                  onChange={handleEditInputChange}
+                  className="w-full p-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-600 uppercase mb-1">DUI</label>
+                  <input
+                    type="text"
+                    name="dui"
+                    value={editFormData.dui}
+                    onChange={handleEditInputChange}
+                    className="w-full p-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-600 uppercase mb-1">Teléfono</label>
+                  <input
+                    type="text"
+                    name="telefono"
+                    value={editFormData.telefono}
+                    onChange={handleEditInputChange}
+                    className="w-full p-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-600 uppercase mb-1">Dirección</label>
+                <input
+                  type="text"
+                  name="direccion"
+                  value={editFormData.direccion}
+                  onChange={handleEditInputChange}
+                  className="w-full p-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-600 uppercase mb-1">Fecha</label>
+                  <input
+                    type="date"
+                    name="fecha"
+                    value={editFormData.fecha}
+                    onChange={handleEditInputChange}
+                    className="w-full p-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-600 uppercase mb-1">Artículo / Base Legal</label>
+                  <input
+                    type="text"
+                    name="articulo"
+                    value={editFormData.articulo}
+                    onChange={handleEditInputChange}
+                    className="w-full p-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-600 uppercase mb-1">Ubicación (Google Maps)</label>
+                <input
+                  type="url"
+                  name="ubicacion"
+                  value={editFormData.ubicacion}
+                  onChange={handleEditInputChange}
+                  className="w-full p-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-600 uppercase mb-1">Descripción</label>
+                <textarea
+                  name="descripcion"
+                  rows="3"
+                  value={editFormData.descripcion}
+                  onChange={handleEditInputChange}
+                  className="w-full p-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                ></textarea>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingAviso(null)}
+                  className="w-1/2 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded-lg transition"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="w-1/2 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow transition"
+                >
+                  Guardar Cambios
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
