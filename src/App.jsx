@@ -426,7 +426,7 @@ export default function App() {
               />
 
               <div className="flex flex-wrap gap-2">
-                {['Todos', 'Activo', 'En progreso', 'Falta Inspección', 'Concluido'].map((estado) => (
+                {['Todos', 'Activo', 'En proceso', 'Falta Inspección', 'Concluido'].map((estado) => (
                   <button
                     key={estado}
                     onClick={() => setFiltroEstado(estado)}
