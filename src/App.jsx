@@ -343,7 +343,7 @@ export default function App() {
           <div>
             <div className="flex items-center gap-3">
               <span className="text-2xl">📄</span>
-              <h1 className="text-2xl font-bold">Recepción de Avisos Municipales La Paz Este</h1>
+              <h1 className="text-2xl font-bold">Recepción de Avisos Municipales</h1>
             </div>
             <p className="text-slate-400 text-sm mt-1">
               Usuario activo: <span className="text-blue-400 font-semibold">{session.user.email.replace('@sistema.local', '')}</span>
