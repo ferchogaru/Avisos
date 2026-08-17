@@ -404,7 +404,7 @@ export default function App() {
           <div className="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-slate-200">
             <div className="flex justify-between items-center border-b pb-3 mb-4">
               <h2 className="text-lg font-bold text-slate-800">
-                Expedientes Ingresados <span className="bg-blue-100 text-blue-800 text-xs px-2.5 py-1 rounded-full ml-2">{avisosFiltrados.length}</span>
+                Avisos Ingresados <span className="bg-blue-100 text-blue-800 text-xs px-2.5 py-1 rounded-full ml-2">{avisosFiltrados.length}</span>
               </h2>
               <button
                 onClick={fetchAvisos}
