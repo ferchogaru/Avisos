@@ -9,7 +9,7 @@ export default function App() {
   const [loginError, setLoginError] = useState(null)
   const [loginLoading, setLoginLoading] = useState(false)
 
-  // Estados de tu Aplicación de Avisos
+  // Estados de la Aplicación de Avisos
   const [avisos, setAvisos] = useState([])
   const [loading, setLoading] = useState(false)
   const [uploading, setUploading] = useState(false)
@@ -18,6 +18,9 @@ export default function App() {
   // Búsqueda y Filtros
   const [busqueda, setBusqueda] = useState('')
   const [filtroEstado, setFiltroEstado] = useState('Todos')
+
+  // Estado para Impresión
+  const [avisoAImprimir, setAvisoAImprimir] = useState(null)
 
   // Formulario de Registro
   const [formData, setFormData] = useState({
@@ -106,7 +109,7 @@ export default function App() {
     } catch (err) {
       console.error('Error crítico:', err)
       setErrorMessage(`Error inesperado: ${err.message}`)
-    } finally {
+    } fontFinally: {
       setLoading(false)
     }
   }
@@ -119,6 +122,13 @@ export default function App() {
   const handleEditInputChange = (e) => {
     const { name, value } = e.target
     setEditFormData((prev) => ({ ...prev, [name]: value }))
+  }
+
+  const handlePrint = (aviso) => {
+    setAvisoAImprimir(aviso)
+    setTimeout(() => {
+      window.print()
+    }, 100)
   }
 
   const handleSubmit = async (e) => {
@@ -264,10 +274,10 @@ export default function App() {
     return coincideTexto && coincideEstado
   })
 
-  // 1. Pantalla de Login (Si NO hay sesión)
+  // Pantalla de Login
   if (!session) {
     return (
-      <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4 font-sans">
+      <div className="min-h-screen bg-slate-900 flex items-center justify-center p-4 font-sans print:hidden">
         <div className="bg-slate-800 border border-slate-700 p-8 rounded-2xl shadow-2xl max-w-md w-full">
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-600/20 text-blue-400 mb-4 border border-blue-500/30">
@@ -323,10 +333,10 @@ export default function App() {
     )
   }
 
-  // 2. Interfaz Principal
+  // Interfaz Principal
   return (
     <div className="min-h-screen bg-slate-100 p-4 md:p-8 font-sans text-slate-800">
-      <div className="max-w-6xl mx-auto space-y-6">
+      <div className="max-w-6xl mx-auto space-y-6 print:hidden">
 
         {/* Encabezado */}
         <header className="bg-slate-900 text-white p-6 rounded-xl shadow-md flex justify-between items-center">
@@ -562,6 +572,12 @@ export default function App() {
 
                       <div className="flex items-center gap-2">
                         <button
+                          onClick={() => handlePrint(aviso)}
+                          className="text-xs px-2 py-1 bg-blue-100 hover:bg-blue-200 text-blue-800 font-semibold rounded transition cursor-pointer flex items-center gap-1"
+                        >
+                          🖨️ Imprimir
+                        </button>
+                        <button
                           onClick={() => handleStartEdit(aviso)}
                           className="text-xs px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded transition cursor-pointer"
                         >
@@ -648,7 +664,7 @@ export default function App() {
 
       {/* MODAL PARA EDITAR AVISO */}
       {editingAviso && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 print:hidden">
           <div className="bg-white border border-slate-200 rounded-xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6">
             <div className="flex justify-between items-center border-b pb-3 mb-4">
               <h3 className="text-lg font-bold text-slate-800">Editar Aviso Ingresado</h3>
@@ -767,6 +783,115 @@ export default function App() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* PLANTILLA DE IMPRESIÓN (Invisible en pantalla, solo visible al imprimir) */}
+      {avisoAImprimir && (
+        <div className="hidden print:block fixed inset-0 bg-white p-6 font-sans text-black z-[9999]">
+          <style type="text/css" media="print">
+            {`
+              @page {
+                size: letter portrait;
+                margin: 15mm;
+              }
+              body {
+                background: white !important;
+                color: black !important;
+              }
+              body > *:not(.print\\:block) {
+                display: none !important;
+              }
+            `}
+          </style>
+
+          <div className="max-w-[8.5in] mx-auto border-2 border-slate-900 p-8 rounded-lg shadow-none">
+            {/* Encabezado Oficial */}
+            <div className="text-center border-b-2 border-slate-800 pb-4 mb-6">
+              <h1 className="text-xl font-bold uppercase tracking-wide text-slate-900">
+                Gobierno Municipal
+              </h1>
+              <h2 className="text-base font-semibold text-slate-700 uppercase mt-1">
+                Delegación Contravencional / Recepción de Avisos
+              </h2>
+              <p className="text-xs text-slate-500 mt-1">
+                Hoja de Registro y Control de Aviso Municipal
+              </p>
+            </div>
+
+            {/* Información del Expediente */}
+            <div className="grid grid-cols-2 gap-4 text-sm mb-6 bg-slate-50 p-4 border border-slate-300 rounded">
+              <div>
+                <p className="font-bold text-slate-600 text-xs uppercase">Fecha del Hecho / Registro</p>
+                <p className="font-medium text-slate-900">{avisoAImprimir.fecha || 'No especificada'}</p>
+              </div>
+              <div>
+                <p className="font-bold text-slate-600 text-xs uppercase">Estado Actual</p>
+                <p className="font-semibold text-slate-900">{avisoAImprimir.estado || 'Activo'}</p>
+              </div>
+            </div>
+
+            {/* Datos del Informante */}
+            <div className="mb-6 space-y-3">
+              <h3 className="text-sm font-bold uppercase border-b border-slate-400 pb-1 text-slate-800">
+                1. Datos del Solicitante / Informante
+              </h3>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="font-semibold">Nombre Completo:</span>
+                  <p className="capitalize text-slate-900">{avisoAImprimir.nombre || 'N/A'}</p>
+                </div>
+                <div>
+                  <span className="font-semibold">DUI:</span>
+                  <p className="text-slate-900">{avisoAImprimir.dui || 'N/A'}</p>
+                </div>
+                <div>
+                  <span className="font-semibold">Teléfono de Contacto:</span>
+                  <p className="text-slate-900">{avisoAImprimir.telefono || 'N/A'}</p>
+                </div>
+                <div>
+                  <span className="font-semibold">Base Legal / Artículo:</span>
+                  <p className="text-slate-900">{avisoAImprimir.articulo || 'N/A'}</p>
+                </div>
+              </div>
+              <div>
+                <span className="font-semibold text-sm">Dirección Registrada:</span>
+                <p className="text-sm text-slate-900 mt-0.5">{avisoAImprimir.direccion || 'Sin dirección'}</p>
+              </div>
+            </div>
+
+            {/* Detalle del Aviso */}
+            <div className="mb-8 space-y-2">
+              <h3 className="text-sm font-bold uppercase border-b border-slate-400 pb-1 text-slate-800">
+                2. Detalle del Aviso / Denuncia
+              </h3>
+              <div className="p-4 border border-slate-300 rounded-lg bg-slate-50 min-h-[150px] text-sm text-slate-900 whitespace-pre-wrap leading-relaxed">
+                {avisoAImprimir.descripcion}
+              </div>
+            </div>
+
+            {/* Ubicación Google Maps */}
+            {avisoAImprimir.ubicacion && (
+              <div className="mb-8 text-xs text-slate-600">
+                <span className="font-semibold">Ubicación GPS / Google Maps:</span>
+                <p className="break-all text-blue-800 underline">{avisoAImprimir.ubicacion}</p>
+              </div>
+            )}
+
+            {/* Firmas y Sello */}
+            <div className="mt-20 pt-8 border-t border-slate-300 grid grid-cols-2 gap-8 text-center text-xs">
+              <div>
+                <div className="border-b border-slate-800 mb-2 w-3/4 mx-auto"></div>
+                <p className="font-bold text-slate-800">Firma del Solicitante / Informante</p>
+                <p className="text-slate-500">DUI: {avisoAImprimir.dui || '________________'}</p>
+              </div>
+              <div>
+                <div className="border-b border-slate-800 mb-2 w-3/4 mx-auto"></div>
+                <p className="font-bold text-slate-800">Sello y Firma Delegación Municipal</p>
+                <p className="text-slate-500">Recepción Contravencional</p>
+              </div>
+            </div>
           </div>
         </div>
       )}
