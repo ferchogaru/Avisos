@@ -816,7 +816,7 @@ export default function App() {
                 Departamento Contravencional / Recepción de Avisos
               </h2>
               <p className="text-xs text-slate-500 mt-1">
-                Hoja de Registro y Control de Aviso Municipal
+                Hoja de registro y control de aviso municipal
               </p>
             </div>
 
