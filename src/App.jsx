@@ -816,7 +816,7 @@ export default function App() {
                 Departamento Contravencional / Recepción de Avisos
               </h2>
               <p className="text-xs text-slate-500 mt-1">
-                Hoja de registro y control de aviso municipal
+                Hoja de registro y control de avisos
               </p>
             </div>
 
@@ -883,13 +883,13 @@ export default function App() {
             <div className="mt-20 pt-8 border-t border-slate-300 grid grid-cols-2 gap-8 text-center text-xs">
               <div>
                 <div className="border-b border-slate-800 mb-2 w-3/4 mx-auto"></div>
-                <p className="font-bold text-slate-800">Firma del Solicitante</p>
+                <p className="font-bold text-slate-800">FIRMA DEL SOLICITANTE</p>
                 <p className="text-slate-500">DUI: {avisoAImprimir.dui || '________________'}</p>
               </div>
               <div>
                 <div className="border-b border-slate-800 mb-2 w-3/4 mx-auto"></div>
-                <p className="font-bold text-slate-800"> Firma de quien recibe</p>
-                <p className="text-slate-500">Departamento Contravencional</p>
+                <p className="font-bold text-slate-800"> FIRMA DE QUIEN RECIBE</p>
+                <p className="text-slate-500">DEPARTAMENTO CONTRAVENCIONAL</p>
               </div>
             </div>
           </div>
