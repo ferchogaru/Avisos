@@ -68,6 +68,13 @@ export default function App() {
     }
   }, [session])
 
+  // Limpiar la plantilla de impresión automáticamente al terminar de imprimir o cancelar
+  useEffect(() => {
+    const handleAfterPrint = () => setAvisoAImprimir(null)
+    window.addEventListener('afterprint', handleAfterPrint)
+    return () => window.removeEventListener('afterprint', handleAfterPrint)
+  }, [])
+
   const handleLogin = async (e) => {
     e.preventDefault()
     setLoginLoading(true)
@@ -109,7 +116,7 @@ export default function App() {
     } catch (err) {
       console.error('Error crítico:', err)
       setErrorMessage(`Error inesperado: ${err.message}`)
-    } fontFinally: {
+    } finally {
       setLoading(false)
     }
   }
@@ -795,13 +802,6 @@ export default function App() {
               @page {
                 size: letter portrait;
                 margin: 15mm;
-              }
-              body {
-                background: white !important;
-                color: black !important;
-              }
-              body > *:not(.print\\:block) {
-                display: none !important;
               }
             `}
           </style>
