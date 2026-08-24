@@ -856,7 +856,7 @@ export default function App() {
                 </div>
               </div>
               <div>
-                <span className="font-semibold text-sm">Dirección Registrada:</span>
+                <span className="font-semibold text-sm">Dirección:</span>
                 <p className="text-sm text-slate-900 mt-0.5">{avisoAImprimir.direccion || 'Sin dirección'}</p>
               </div>
             </div>
