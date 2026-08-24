@@ -441,7 +441,7 @@ export default function App() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-slate-600 uppercase mb-1">
-                    Fecha del hecho
+                    Fecha
                   </label>
                   <input
                     type="date"
@@ -810,10 +810,10 @@ export default function App() {
             {/* Encabezado Oficial */}
             <div className="text-center border-b-2 border-slate-800 pb-4 mb-6">
               <h1 className="text-xl font-bold uppercase tracking-wide text-slate-900">
-                Gobierno Municipal
+                Alcaldia Municipal de La Paz Este
               </h1>
               <h2 className="text-base font-semibold text-slate-700 uppercase mt-1">
-                Delegación Contravencional / Recepción de Avisos
+                Departamento Contravencional / Recepción de Avisos
               </h2>
               <p className="text-xs text-slate-500 mt-1">
                 Hoja de Registro y Control de Aviso Municipal
@@ -823,7 +823,7 @@ export default function App() {
             {/* Información del Expediente */}
             <div className="grid grid-cols-2 gap-4 text-sm mb-6 bg-slate-50 p-4 border border-slate-300 rounded">
               <div>
-                <p className="font-bold text-slate-600 text-xs uppercase">Fecha del Hecho / Registro</p>
+                <p className="font-bold text-slate-600 text-xs uppercase">Fecha</p>
                 <p className="font-medium text-slate-900">{avisoAImprimir.fecha || 'No especificada'}</p>
               </div>
               <div>
@@ -835,7 +835,7 @@ export default function App() {
             {/* Datos del Informante */}
             <div className="mb-6 space-y-3">
               <h3 className="text-sm font-bold uppercase border-b border-slate-400 pb-1 text-slate-800">
-                1. Datos del Solicitante / Informante
+                1. Datos del Solicitante
               </h3>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
@@ -883,13 +883,13 @@ export default function App() {
             <div className="mt-20 pt-8 border-t border-slate-300 grid grid-cols-2 gap-8 text-center text-xs">
               <div>
                 <div className="border-b border-slate-800 mb-2 w-3/4 mx-auto"></div>
-                <p className="font-bold text-slate-800">Firma del Solicitante / Informante</p>
+                <p className="font-bold text-slate-800">Firma del Solicitante</p>
                 <p className="text-slate-500">DUI: {avisoAImprimir.dui || '________________'}</p>
               </div>
               <div>
                 <div className="border-b border-slate-800 mb-2 w-3/4 mx-auto"></div>
-                <p className="font-bold text-slate-800">Sello y Firma Delegación Municipal</p>
-                <p className="text-slate-500">Recepción Contravencional</p>
+                <p className="font-bold text-slate-800"> Firma Departamento Contravencional</p>
+                <p className="text-slate-500">Alcadia Municipal de La Paz Este</p>
               </div>
             </div>
           </div>
