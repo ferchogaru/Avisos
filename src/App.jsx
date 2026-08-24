@@ -453,7 +453,7 @@ export default function App() {
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-600 uppercase mb-1">
-                    Artículo / Base Legal
+                    Artículo / Contravención
                   </label>
                   <input
                     type="text"
@@ -851,7 +851,7 @@ export default function App() {
                   <p className="text-slate-900">{avisoAImprimir.telefono || 'N/A'}</p>
                 </div>
                 <div>
-                  <span className="font-semibold">Base Legal / Artículo:</span>
+                  <span className="font-semibold">Contravención / Artículo:</span>
                   <p className="text-slate-900">{avisoAImprimir.articulo || 'N/A'}</p>
                 </div>
               </div>
@@ -888,8 +888,8 @@ export default function App() {
               </div>
               <div>
                 <div className="border-b border-slate-800 mb-2 w-3/4 mx-auto"></div>
-                <p className="font-bold text-slate-800"> Firma Departamento Contravencional</p>
-                <p className="text-slate-500">Alcadia Municipal de La Paz Este</p>
+                <p className="font-bold text-slate-800"> Firma de quien recibe</p>
+                <p className="text-slate-500">Departamento Contravencional</p>
               </div>
             </div>
           </div>
