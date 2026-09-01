@@ -1076,7 +1076,7 @@ export default function App() {
               <div>
                 <div className="border-b border-slate-800 mb-2 w-3/4 mx-auto"></div>
                 <p className="font-bold text-slate-800"> FIRMA DE QUIEN RECIBE</p>
-                <p className="text-slate-500">DEPARTAMENTO CONTRAVENCIONAL</p>
+                <p className="text-slate-500">DEPARTAMENTO CONTRAVENCIONAl</p>
               </div>
             </div>
           </div>
