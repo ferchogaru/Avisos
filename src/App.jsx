@@ -992,7 +992,7 @@ export default function App() {
             {/* Encabezado Oficial */}
             <div className="flex items-center gap-4 border-b-2 border-slate-800 pb-4 mb-6">
               <img
-                src="/logo-alcaldia.jpeg"
+                src="/logo-alcaldia-color.jpeg"
                 alt="Logo Alcaldía de La Paz Este"
                 className="h-20 w-20 object-contain flex-shrink-0"
               />
