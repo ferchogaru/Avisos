@@ -15,6 +15,9 @@ export default function App() {
   const [uploading, setUploading] = useState(false)
   const [errorMessage, setErrorMessage] = useState(null)
 
+  // Navegación (Menú Lateral)
+  const [vista, setVista] = useState('dashboard') // 'dashboard' | 'nuevo' | 'avisos'
+
   // Búsqueda y Filtros
   const [busqueda, setBusqueda] = useState('')
   const [filtroEstado, setFiltroEstado] = useState('Todos')
@@ -47,6 +50,7 @@ export default function App() {
     fecha: '',
     ubicacion: '',
   })
+  const [editArchivo, setEditArchivo] = useState(null)
 
   // Manejo de Sesión de Supabase
   useEffect(() => {
@@ -197,6 +201,7 @@ export default function App() {
       setArchivo(null)
       fetchAvisos()
       alert('Aviso guardado con éxito')
+      setVista('avisos')
     } catch (error) {
       console.error('Error al guardar:', error)
       alert(`Ocurrió un error al guardar: ${error.message || 'Verifica la consola'}`)
@@ -208,6 +213,7 @@ export default function App() {
   // Abrir Modal de Edición
   const handleStartEdit = (aviso) => {
     setEditingAviso(aviso)
+    setEditArchivo(null)
     setEditFormData({
       nombre: aviso.nombre || '',
       dui: aviso.dui || '',
@@ -220,12 +226,34 @@ export default function App() {
     })
   }
 
-  // Guardar Edición
+  // Guardar Edición (incluye subida de imagen/archivo si se seleccionó uno nuevo)
   const handleSaveEdit = async (e) => {
     e.preventDefault()
     if (!editingAviso) return
 
     try {
+      // Por defecto conservamos el archivo que ya tenía el aviso
+      let archivoUrl = editingAviso.archivo_url || null
+
+      // Si el usuario seleccionó un archivo nuevo en el modal, lo subimos y reemplazamos la URL
+      if (editArchivo) {
+        const fileExt = editArchivo.name.split('.').pop()
+        const fileName = `${Date.now()}.${fileExt}`
+        const filePath = `${fileName}`
+
+        const { error: uploadError } = await supabase.storage
+          .from('documentos_avisos')
+          .upload(filePath, editArchivo)
+
+        if (uploadError) throw uploadError
+
+        const { data: publicUrlData } = supabase.storage
+          .from('documentos_avisos')
+          .getPublicUrl(filePath)
+
+        archivoUrl = publicUrlData.publicUrl
+      }
+
       const { error } = await supabase
         .from('avisos')
         .update({
@@ -237,6 +265,7 @@ export default function App() {
           descripcion: editFormData.descripcion,
           fecha: editFormData.fecha || null,
           ubicacion: editFormData.ubicacion,
+          archivo_url: archivoUrl,
         })
         .eq('id', editingAviso.id)
 
@@ -244,6 +273,7 @@ export default function App() {
 
       alert('Aviso actualizado correctamente')
       setEditingAviso(null)
+      setEditArchivo(null)
       fetchAvisos()
     } catch (error) {
       console.error('Error actualizando aviso:', error)
@@ -280,6 +310,8 @@ export default function App() {
 
     return coincideTexto && coincideEstado
   })
+
+  const ESTADOS = ['Activo', 'En proceso', 'Falta Inspección', 'Concluido']
 
   // Pantalla de Login
   if (!session) {
@@ -340,42 +372,120 @@ export default function App() {
     )
   }
 
-  // Interfaz Principal
+  // Interfaz Principal (con menú lateral)
   return (
-    <div className="min-h-screen bg-slate-100 p-4 md:p-8 font-sans text-slate-800">
-      <div className="max-w-6xl mx-auto space-y-6 print:hidden">
+    <div className="min-h-screen bg-slate-100 font-sans text-slate-800 flex print:hidden">
 
-        {/* Encabezado */}
-        <header className="bg-slate-900 text-white p-6 rounded-xl shadow-md flex justify-between items-center">
-          <div>
-            <div className="flex items-center gap-3">
-              <span className="text-2xl">📄</span>
-              <h1 className="text-2xl font-bold">Recepción de Avisos Municipales</h1>
+      {/* MENÚ LATERAL */}
+      <aside className="w-64 bg-slate-900 text-white flex flex-col shrink-0 min-h-screen">
+        <div className="p-6 border-b border-slate-800">
+          <div className="flex items-center gap-2">
+            <span className="text-2xl">📄</span>
+            <div>
+              <h1 className="font-bold text-sm leading-tight">Recepción de Avisos</h1>
+              <p className="text-slate-400 text-xs">Municipales</p>
             </div>
-            <p className="text-slate-400 text-sm mt-1">
-              Usuario activo: <span className="text-blue-400 font-semibold">{session.user.email.replace('@sistema.local', '')}</span>
-            </p>
           </div>
+        </div>
+
+        <nav className="flex-1 p-4 space-y-1">
+          <button
+            onClick={() => setVista('dashboard')}
+            className={`w-full text-left px-4 py-2.5 rounded-lg text-sm font-semibold transition cursor-pointer ${
+              vista === 'dashboard' ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-800'
+            }`}
+          >
+            📊 Dashboard
+          </button>
+          <button
+            onClick={() => setVista('nuevo')}
+            className={`w-full text-left px-4 py-2.5 rounded-lg text-sm font-semibold transition cursor-pointer ${
+              vista === 'nuevo' ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-800'
+            }`}
+          >
+            ➕ Nuevo Aviso
+          </button>
+          <button
+            onClick={() => setVista('avisos')}
+            className={`w-full text-left px-4 py-2.5 rounded-lg text-sm font-semibold transition cursor-pointer ${
+              vista === 'avisos' ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-800'
+            }`}
+          >
+            📋 Avisos Ingresados
+          </button>
+        </nav>
+
+        <div className="p-4 border-t border-slate-800">
+          <p className="text-xs text-slate-400 mb-2 truncate">
+            {session.user.email.replace('@sistema.local', '')}
+          </p>
           <button
             onClick={handleLogout}
-            className="px-4 py-2 bg-slate-800 hover:bg-rose-600 text-slate-300 hover:text-white text-xs font-semibold rounded-lg transition border border-slate-700 cursor-pointer"
+            className="w-full px-4 py-2 bg-slate-800 hover:bg-rose-600 text-slate-300 hover:text-white text-xs font-semibold rounded-lg transition cursor-pointer"
           >
             Cerrar Sesión
           </button>
-        </header>
+        </div>
+      </aside>
 
-        {/* Mensaje de Error */}
+      {/* CONTENIDO PRINCIPAL */}
+      <main className="flex-1 p-4 md:p-8 max-w-6xl">
+
         {errorMessage && (
-          <div className="p-4 bg-rose-100 border border-rose-300 text-rose-800 rounded-xl text-sm font-semibold">
+          <div className="p-4 bg-rose-100 border border-rose-300 text-rose-800 rounded-xl text-sm font-semibold mb-6">
             ⚠️ {errorMessage}
           </div>
         )}
 
-        {/* Contenido Principal */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* VISTA: DASHBOARD (solo conteo por estado) */}
+        {vista === 'dashboard' && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold text-slate-800">Dashboard</h2>
+              <button
+                onClick={fetchAvisos}
+                className="p-2 text-slate-500 hover:text-slate-700 rounded-lg border bg-white hover:bg-slate-50 cursor-pointer"
+                title="Recargar"
+              >
+                🔄
+              </button>
+            </div>
 
-          {/* Formulario */}
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+            {loading ? (
+              <p className="text-slate-500 text-sm">Cargando datos...</p>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+                  <p className="text-xs font-bold text-slate-500 uppercase">Total Avisos</p>
+                  <p className="text-3xl font-bold text-slate-900 mt-1">{avisos.length}</p>
+                </div>
+
+                {ESTADOS.map((estado) => {
+                  const cantidad = avisos.filter((a) => a.estado === estado).length
+                  const colorTexto =
+                    estado === 'Activo'
+                      ? 'text-emerald-600'
+                      : estado === 'En proceso'
+                      ? 'text-amber-600'
+                      : estado === 'Falta Inspección'
+                      ? 'text-rose-600'
+                      : 'text-slate-600'
+
+                  return (
+                    <div key={estado} className="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+                      <p className="text-xs font-bold text-slate-500 uppercase">{estado}</p>
+                      <p className={`text-3xl font-bold mt-1 ${colorTexto}`}>{cantidad}</p>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* VISTA: NUEVO AVISO */}
+        {vista === 'nuevo' && (
+          <div className="max-w-2xl bg-white p-6 rounded-xl shadow-sm border border-slate-200">
             <h2 className="text-lg font-bold border-b pb-3 mb-4 text-slate-800">
               Registrar Nuevo Aviso
             </h2>
@@ -514,9 +624,11 @@ export default function App() {
               </button>
             </form>
           </div>
+        )}
 
-          {/* Buscador, Filtros y Lista */}
-          <div className="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+        {/* VISTA: AVISOS INGRESADOS (buscador, filtros y lista) */}
+        {vista === 'avisos' && (
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
             <div className="flex justify-between items-center border-b pb-3 mb-4">
               <h2 className="text-lg font-bold text-slate-800">
                 Avisos Ingresados <span className="bg-blue-100 text-blue-800 text-xs px-2.5 py-1 rounded-full ml-2">{avisosFiltrados.length}</span>
@@ -541,7 +653,7 @@ export default function App() {
               />
 
               <div className="flex flex-wrap gap-2">
-                {['Todos', 'Activo', 'En proceso', 'Falta Inspección', 'Concluido'].map((estado) => (
+                {['Todos', ...ESTADOS].map((estado) => (
                   <button
                     key={estado}
                     onClick={() => setFiltroEstado(estado)}
@@ -645,7 +757,7 @@ export default function App() {
 
                     <div className="pt-3 border-t border-slate-200 flex flex-wrap items-center gap-2">
                       <span className="text-xs text-slate-400 font-semibold">Cambiar estado:</span>
-                      {['Activo', 'En proceso', 'Falta Inspección', 'Concluido'].map((est) => (
+                      {ESTADOS.map((est) => (
                         <button
                           key={est}
                           onClick={() => cambiarEstado(aviso.id, est)}
@@ -665,9 +777,9 @@ export default function App() {
               </div>
             )}
           </div>
+        )}
 
-        </div>
-      </div>
+      </main>
 
       {/* MODAL PARA EDITAR AVISO */}
       {editingAviso && (
@@ -774,6 +886,41 @@ export default function App() {
                 ></textarea>
               </div>
 
+              {/* Adjuntar / Reemplazar Imagen o Archivo */}
+              <div>
+                <label className="block text-xs font-bold text-slate-600 uppercase mb-1">
+                  Foto o Archivo Adjunto
+                </label>
+
+                {editingAviso.archivo_url && !editArchivo && (
+                  <a
+                    href={editingAviso.archivo_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg mb-2"
+                  >
+                    📤 Ver archivo actual
+                  </a>
+                )}
+
+                {editArchivo && (
+                  <p className="text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1.5 rounded-lg mb-2">
+                    ✔ Nuevo archivo listo para subir: {editArchivo.name}
+                  </p>
+                )}
+
+                <input
+                  type="file"
+                  onChange={(e) => setEditArchivo(e.target.files[0])}
+                  className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                />
+                <p className="text-[11px] text-slate-400 mt-1">
+                  {editingAviso.archivo_url
+                    ? 'Si subes un archivo nuevo, reemplazará al actual.'
+                    : 'Este aviso no tiene archivo adjunto todavía — puedes subir uno aquí.'}
+                </p>
+              </div>
+
               <div className="flex gap-3 pt-2">
                 <button
                   type="button"
@@ -808,16 +955,23 @@ export default function App() {
 
           <div className="max-w-[8.5in] mx-auto border-2 border-slate-900 p-8 rounded-lg shadow-none">
             {/* Encabezado Oficial */}
-            <div className="text-center border-b-2 border-slate-800 pb-4 mb-6">
-              <h1 className="text-xl font-bold uppercase tracking-wide text-slate-900">
-                Alcaldia Municipal de La Paz Este
-              </h1>
-              <h2 className="text-base font-semibold text-slate-700 uppercase mt-1">
-                Departamento Contravencional / Recepción de Avisos
-              </h2>
-              <p className="text-xs text-slate-500 mt-1">
-                Hoja de registro y control de avisos
-              </p>
+            <div className="flex items-center gap-4 border-b-2 border-slate-800 pb-4 mb-6">
+              <img
+                src="/logo-alcaldia.jpeg"
+                alt="Logo Alcaldía de La Paz Este"
+                className="h-20 w-20 object-contain flex-shrink-0"
+              />
+              <div className="text-center flex-1">
+                <h1 className="text-xl font-bold uppercase tracking-wide text-slate-900">
+                  Alcaldia Municipal de La Paz Este
+                </h1>
+                <h2 className="text-base font-semibold text-slate-700 uppercase mt-1">
+                  Departamento Contravencional / Recepción de Avisos
+                </h2>
+                <p className="text-xs text-slate-500 mt-1">
+                  Hoja de registro y control de avisos
+                </p>
+              </div>
             </div>
 
             {/* Información del Expediente */}
