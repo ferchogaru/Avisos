@@ -375,6 +375,7 @@ export default function App() {
 
   // Interfaz Principal (con menú lateral)
   return (
+    <>
     <div className="min-h-screen bg-slate-100 font-sans text-slate-800 flex print:hidden">
 
       {/* MENÚ LATERAL */}
@@ -813,6 +814,7 @@ export default function App() {
         )}
 
       </main>
+    </div>
 
       {/* MODAL PARA EDITAR AVISO */}
       {editingAviso && (
@@ -1076,12 +1078,12 @@ export default function App() {
               <div>
                 <div className="border-b border-slate-800 mb-2 w-3/4 mx-auto"></div>
                 <p className="font-bold text-slate-800"> FIRMA DE QUIEN RECIBE</p>
-                <p className="text-slate-500">DEPARTAMENTO CONTRAVENCIONAl</p>
+                <p className="text-slate-500">DEPARTAMENTO CONTRAVENCIONAL</p>
               </div>
             </div>
           </div>
         </div>
       )}
-    </div>
+    </>
   )
 }
