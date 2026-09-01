@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from './supabaseClient'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
 export default function App() {
   // Estados de Autenticación
@@ -437,7 +438,7 @@ export default function App() {
           </div>
         )}
 
-        {/* VISTA: DASHBOARD (solo conteo por estado) */}
+        {/* VISTA: DASHBOARD (logo, conteo por estado y gráfica) */}
         {vista === 'dashboard' && (
           <div className="space-y-6">
             <div className="flex justify-between items-center">
@@ -451,174 +452,206 @@ export default function App() {
               </button>
             </div>
 
+            {/* Logo grande de la Alcaldía */}
+            <div className="bg-white p-8 rounded-xl shadow-sm border border-slate-200 flex justify-center">
+              <img
+                src="/logo-alcaldia-color.jpeg"
+                alt="Logo Alcaldía La Paz Este"
+                className="h-44 md:h-56 object-contain"
+              />
+            </div>
+
             {loading ? (
               <p className="text-slate-500 text-sm">Cargando datos...</p>
             ) : (
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
-                  <p className="text-xs font-bold text-slate-500 uppercase">Total Avisos</p>
-                  <p className="text-3xl font-bold text-slate-900 mt-1">{avisos.length}</p>
+              <>
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                  <div className="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+                    <p className="text-xs font-bold text-slate-500 uppercase">Total Avisos</p>
+                    <p className="text-3xl font-bold text-slate-900 mt-1">{avisos.length}</p>
+                  </div>
+
+                  {ESTADOS.map((estado) => {
+                    const cantidad = avisos.filter((a) => a.estado === estado).length
+                    const colorTexto =
+                      estado === 'Activo'
+                        ? 'text-emerald-600'
+                        : estado === 'En proceso'
+                        ? 'text-amber-600'
+                        : estado === 'Falta Inspección'
+                        ? 'text-rose-600'
+                        : 'text-slate-600'
+
+                    return (
+                      <div key={estado} className="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
+                        <p className="text-xs font-bold text-slate-500 uppercase">{estado}</p>
+                        <p className={`text-3xl font-bold mt-1 ${colorTexto}`}>{cantidad}</p>
+                      </div>
+                    )
+                  })}
                 </div>
 
-                {ESTADOS.map((estado) => {
-                  const cantidad = avisos.filter((a) => a.estado === estado).length
-                  const colorTexto =
-                    estado === 'Activo'
-                      ? 'text-emerald-600'
-                      : estado === 'En proceso'
-                      ? 'text-amber-600'
-                      : estado === 'Falta Inspección'
-                      ? 'text-rose-600'
-                      : 'text-slate-600'
-
-                  return (
-                    <div key={estado} className="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
-                      <p className="text-xs font-bold text-slate-500 uppercase">{estado}</p>
-                      <p className={`text-3xl font-bold mt-1 ${colorTexto}`}>{cantidad}</p>
-                    </div>
-                  )
-                })}
-              </div>
+                {/* Gráfica de Avisos por Estado */}
+                <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                  <h3 className="text-sm font-bold text-slate-600 uppercase mb-4">
+                    Avisos por Estado
+                  </h3>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={ESTADOS.map((estado) => ({
+                      estado,
+                      cantidad: avisos.filter((a) => a.estado === estado).length,
+                    }))}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                      <XAxis dataKey="estado" tick={{ fontSize: 12, fill: '#475569' }} />
+                      <YAxis allowDecimals={false} tick={{ fontSize: 12, fill: '#475569' }} />
+                      <Tooltip />
+                      <Bar dataKey="cantidad" fill="#2563eb" radius={[6, 6, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </>
             )}
           </div>
         )}
 
-        {/* VISTA: NUEVO AVISO */}
+        {/* VISTA: NUEVO AVISO (pantalla completa) */}
         {vista === 'nuevo' && (
-          <div className="max-w-2xl bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-            <h2 className="text-lg font-bold border-b pb-3 mb-4 text-slate-800">
+          <div className="w-full bg-white p-6 md:p-8 rounded-xl shadow-sm border border-slate-200">
+            <h2 className="text-lg font-bold border-b pb-3 mb-6 text-slate-800">
               Registrar Nuevo Aviso
             </h2>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-600 uppercase mb-1">
-                  Nombre Completo *
-                </label>
-                <input
-                  type="text"
-                  name="nombre"
-                  placeholder="Nombre de quien deja el aviso"
-                  value={formData.nombre}
-                  onChange={handleInputChange}
-                  className="w-full p-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
+            <form onSubmit={handleSubmit} className="space-y-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
                   <label className="block text-xs font-bold text-slate-600 uppercase mb-1">
-                    DUI *
+                    Nombre Completo *
                   </label>
                   <input
                     type="text"
-                    name="dui"
-                    placeholder="00000000-0"
-                    value={formData.dui}
+                    name="nombre"
+                    placeholder="Nombre de quien deja el aviso"
+                    value={formData.nombre}
                     onChange={handleInputChange}
                     className="w-full p-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-600 uppercase mb-1">
+                      DUI *
+                    </label>
+                    <input
+                      type="text"
+                      name="dui"
+                      placeholder="00000000-0"
+                      value={formData.dui}
+                      onChange={handleInputChange}
+                      className="w-full p-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-600 uppercase mb-1">
+                      Teléfono
+                    </label>
+                    <input
+                      type="text"
+                      name="telefono"
+                      placeholder="7000-0000"
+                      value={formData.telefono}
+                      onChange={handleInputChange}
+                      className="w-full p-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                </div>
+
                 <div>
                   <label className="block text-xs font-bold text-slate-600 uppercase mb-1">
-                    Teléfono
+                    Dirección
                   </label>
                   <input
                     type="text"
-                    name="telefono"
-                    placeholder="7000-0000"
-                    value={formData.telefono}
+                    name="direccion"
+                    placeholder="Dirección del hecho o del solicitante"
+                    value={formData.direccion}
                     onChange={handleInputChange}
                     className="w-full p-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
-              </div>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-600 uppercase mb-1">
-                  Dirección
-                </label>
-                <input
-                  type="text"
-                  name="direccion"
-                  placeholder="Dirección del hecho o del solicitante"
-                  value={formData.direccion}
-                  onChange={handleInputChange}
-                  className="w-full p-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-600 uppercase mb-1">
+                      Fecha
+                    </label>
+                    <input
+                      type="date"
+                      name="fecha"
+                      value={formData.fecha}
+                      onChange={handleInputChange}
+                      className="w-full p-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-600 uppercase mb-1">
+                      Artículo / Contravención
+                    </label>
+                    <input
+                      type="text"
+                      name="articulo"
+                      placeholder="Ej: Art. 45"
+                      value={formData.articulo}
+                      onChange={handleInputChange}
+                      className="w-full p-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
+                <div className="md:col-span-2">
                   <label className="block text-xs font-bold text-slate-600 uppercase mb-1">
-                    Fecha
+                    Ubicación (Link Google Maps)
                   </label>
                   <input
-                    type="date"
-                    name="fecha"
-                    value={formData.fecha}
+                    type="url"
+                    name="ubicacion"
+                    placeholder="https://maps.google.com/..."
+                    value={formData.ubicacion}
                     onChange={handleInputChange}
                     className="w-full p-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
-                <div>
+
+                <div className="md:col-span-2">
                   <label className="block text-xs font-bold text-slate-600 uppercase mb-1">
-                    Artículo / Contravención
+                    Descripción del Aviso *
+                  </label>
+                  <textarea
+                    name="descripcion"
+                    rows="4"
+                    placeholder="Detalles sobre lo que reporta la persona..."
+                    value={formData.descripcion}
+                    onChange={handleInputChange}
+                    className="w-full p-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  ></textarea>
+                </div>
+
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-bold text-slate-600 uppercase mb-1">
+                    Adjuntar Foto o Archivo
                   </label>
                   <input
-                    type="text"
-                    name="articulo"
-                    placeholder="Ej: Art. 45"
-                    value={formData.articulo}
-                    onChange={handleInputChange}
-                    className="w-full p-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    type="file"
+                    onChange={(e) => setArchivo(e.target.files[0])}
+                    className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                   />
                 </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-600 uppercase mb-1">
-                  Ubicación (Link Google Maps)
-                </label>
-                <input
-                  type="url"
-                  name="ubicacion"
-                  placeholder="https://maps.google.com/..."
-                  value={formData.ubicacion}
-                  onChange={handleInputChange}
-                  className="w-full p-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-600 uppercase mb-1">
-                  Descripción del Aviso *
-                </label>
-                <textarea
-                  name="descripcion"
-                  rows="3"
-                  placeholder="Detalles sobre lo que reporta la persona..."
-                  value={formData.descripcion}
-                  onChange={handleInputChange}
-                  className="w-full p-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                ></textarea>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-600 uppercase mb-1">
-                  Adjuntar Foto o Archivo
-                </label>
-                <input
-                  type="file"
-                  onChange={(e) => setArchivo(e.target.files[0])}
-                  className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                />
               </div>
 
               <button
                 type="submit"
                 disabled={uploading}
-                className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow transition-all disabled:opacity-50 mt-2 cursor-pointer"
+                className="w-full md:w-auto md:px-12 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow transition-all disabled:opacity-50 mt-2 cursor-pointer"
               >
                 {uploading ? 'Guardando...' : 'Guardar Registro'}
               </button>
